@@ -4,7 +4,9 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "GameMap.h"
 #include "Display.h"
+
 
 int main() {
 

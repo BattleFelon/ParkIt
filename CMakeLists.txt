@@ -13,8 +13,12 @@ include_directories(include)
 
 SET(bridge_SRCS 	
 	src/main.cpp
+	src/GameMap.cpp
 	src/Display.cpp
+	src/MovingObject.cpp
+	include/GameMap.h
 	include/Display.h
+	include/MovingObject.h
 )
 
 add_executable(ParkIt ${bridge_SRCS})

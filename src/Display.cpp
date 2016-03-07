@@ -1,9 +1,13 @@
+
+#include "GameMap.h"
 #include "Display.h"
+#include "MovingObject.h"
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFGUI/Widgets.hpp>
 
 #include <SFML/Graphics.hpp>
+#include <SFML/System.hpp>
 
 #include <vector>
 #include <iostream>
@@ -26,31 +30,32 @@ void Display::init()
 	m_view = m_renderWindow.getDefaultView();
 	m_renderWindow.setFramerateLimit(60);
 
-	for(int i = 0; i < M_X; ++i){
-		for(int j = 0; j < M_Y;++j){
-			m_map[i][j] = 1;
-		}
-	}
-
 	createGui();
+	m_gameMap.init(500,500);
+	//Sprite info
+    m_texture.loadFromFile("arrow.png");
+    m_sprite.setTexture(m_texture);
+    m_sprite.setOrigin(25,25);
+	m_placeRoad = false;
+	m_leftDown = false;
+	m_mouseMove = false;
 }
 
 void Display::run()
 {
+    std::vector<sf::CircleShape> shapes;
 
-    sf::CircleShape shape1(25);
-    shape1.setFillColor(sf::Color(150, 50, 250));
+    for(int i = 0; i < 10; ++i){
+    sf::CircleShape shape(25);
+    shape.setFillColor(sf::Color(i*20, 50, 250-i*20));
+    shapes.push_back(shape);
+    }
 
-    sf::CircleShape shape2(25);
-    shape2.setFillColor(sf::Color(100, 250, 100));
 
-    sf::CircleShape shape3(25);
-    shape2.setFillColor(sf::Color(200, 0, 100));
-
-    sf::RectangleShape car((sf::Vector2f(25,50)));
-    car.setFillColor(sf::Color::Red);
-    car.setOrigin(sf::Vector2f(car.getSize().x/2,car.getSize().y/2));
-    car.setPosition(sf::Vector2f(M_X/2*50, M_Y/2*50));
+    sf::CircleShape carSprite(10);
+    carSprite.setFillColor(sf::Color::Magenta);
+    MovingObject car;
+    car.init(sf::Vector2f(123,135),4,4,&m_gameMap);
 
 	while (m_renderWindow.isOpen())
 	{
@@ -65,38 +70,114 @@ void Display::run()
 
 		//Clear previous frame
 		m_renderWindow.clear();
-        car.move(sf::Vector2f(rand() % 10 -5,rand() % 10 -5));
+        sf::Clock clock;
 
-		for(int i = 0; i < M_X; ++i){
-			for(int j = 0; j < M_Y;++j){
-                if(m_placeRoad && (int)firstPos.x/50 >=0 && (int)firstPos.y/50 >=0 && (int)firstPos.x/50 < M_Y && (int)firstPos.y/50 < M_Y){
-                    m_map[(int)floor(firstPos.x /50)][(int)floor(firstPos.y/50)] = 2;
+        //Culling Code
+        int endCullX = (m_renderWindow.getView().getSize().x + m_renderWindow.getView().getCenter().x )/50 + 10;
+        int startCullX = (m_renderWindow.getView().getCenter().x - m_renderWindow.getView().getSize().x/2)/50;
+        int endCullY = (m_renderWindow.getView().getSize().y  + m_renderWindow.getView().getCenter().y)/50 + 10;
+        int startCullY = (m_renderWindow.getView().getCenter().y - m_renderWindow.getView().getSize().y/2)/50;
+
+
+        //Low Bounds
+        if(endCullX + startCullX < 0)
+            endCullX = 0;
+
+        if(endCullY + startCullY < 0)
+            endCullY = 0;
+
+        if(startCullX < 0)
+            startCullX = 0;
+
+        if(startCullY < 0)
+            startCullY = 0;
+
+        //High Bounds
+        if(endCullX + startCullX > m_gameMap.getX())
+            endCullX = m_gameMap.getX();
+
+        if(endCullY + startCullY > m_gameMap.getY())
+            endCullY = m_gameMap.getY();
+
+        if(startCullX > m_gameMap.getX())
+            startCullX = m_gameMap.getX();
+
+        if(startCullY > m_gameMap.getY())
+            startCullY = m_gameMap.getY();
+
+       for(register int i = startCullX, n = endCullX; i < n; ++i){
+           for(register int j = startCullY, m = endCullY; j < m; ++j){
+                switch(m_gameMap.getVal(i,j)){
+
+                case 0:
+                    shapes[0].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[0]);
+                    break;
+
+                case 1:
+                    m_sprite.setPosition(i*50+25, j*50+25);
+                    m_sprite.setRotation(0);
+                    m_renderWindow.draw(m_sprite);
+                    break;
+
+                case 2:
+                    m_sprite.setPosition(i*50+25, j*50+25);
+                    m_sprite.setRotation(270);
+                    m_renderWindow.draw(m_sprite);
+                    break;
+
+                case 3:
+                    m_sprite.setPosition(i*50+25, j*50+25);
+                    m_sprite.setRotation(180);
+                    m_renderWindow.draw(m_sprite);
+                    break;
+
+                case 4:
+                    m_sprite.setPosition(i*50+25, j*50+25);
+                    m_sprite.setRotation(90);
+                    m_renderWindow.draw(m_sprite);
+                    break;
+
+                case 5:
+                    shapes[5].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[5]);
+                    break;
+
+                case 6:
+                    shapes[6].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[6]);
+                    break;
+
+                case 7:
+                    shapes[7].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[7]);
+                    break;
+
+                case 8:
+                    shapes[8].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[8]);
+                    break;
+
+                case 9:
+                    shapes[9].setPosition(i*50, j*50);
+                    m_renderWindow.draw(shapes[9]);
+                    break;
                 }
+            }
+        }
 
-                if(car.getPosition().x > i*50 && car.getPosition().y > j*50 && car.getPosition().x < i *51 && car.getPosition().y < j*51)
-                    m_map[i][j] = 3;
-
-                    if(m_map[i][j] == 1){
-				shape1.setPosition(sf::Vector2f(i*50,j*50));
-				m_renderWindow.draw(shape1);
-				}
-				else if(m_map[i][j] == 2){
-                shape2.setPosition(sf::Vector2f(i*50,j*50));
-                m_renderWindow.draw(shape2);
-				}
-				else if(m_map[i][j] ==3){
-				shape3.setPosition(sf::Vector2f(i*50,j*50));
-				m_renderWindow.draw(shape3);
-				}
-			}
-		}
-
+        carSprite.setPosition(car.getPos());
+        m_renderWindow.draw(carSprite);
+        car.update();
+        //std::cout << clock.getElapsedTime().asMicroseconds() << " " << m_zoom <<  "\n";
 		//Drawing goes here----------------------------------------------------------
 
 		//Show render windows
 		m_sfgui.Display(m_renderWindow);
 		m_renderWindow.display();
 	}
+
+	std::cout << " Program Terminated \n";
 }
 
 void Display::moveView()
@@ -142,6 +223,7 @@ void Display::eventHandle()
 		if (m_event.type == sf::Event::Resized)
 		{
 			// update the view to the new size of the window
+			m_zoom = 0.0f;
 			sf::FloatRect visibleArea(0, 0, (float)m_event.size.width, (float)m_event.size.height);
 			m_renderWindow.setView(sf::View(visibleArea));
 			m_view = m_renderWindow.getView();
@@ -162,18 +244,41 @@ void Display::eventHandle()
 				m_view.zoom(1.f / .9f);
 			}
 		}
-
 		if(m_event.type == sf::Event::MouseButtonPressed && m_placeRoad){
-            sf::Vector2i mouse = sf::Mouse::getPosition(m_renderWindow);
-            std::cout << mouse.x << " " << mouse.y << '\n';
-            firstPos = m_renderWindow.mapPixelToCoords(mouse,m_view);
-            std::cout << firstPos.x << " " << firstPos.y << '\n';
+            if(m_event.mouseButton.button == sf::Mouse::Left){
+                sf::Vector2i mouse = sf::Mouse::getPosition(m_renderWindow);
+                firstPos = m_renderWindow.mapPixelToCoords(mouse,m_view);
+                m_gameMap.changVal(firstPos.x,firstPos.y,1);
+                m_leftDown = true;
+            }
+		}
 
-		}
-		if(m_event.type == sf::Event::MouseButtonReleased && m_placeRoad){
-            sf::Vector2i mouse = sf::Mouse::getPosition(m_renderWindow);
-            secondPos = m_renderWindow.mapPixelToCoords(mouse,m_view);
-		}
+         if(m_event.type == sf::Event::MouseMoved && m_leftDown){
+                sf::Vector2i mouse = sf::Mouse::getPosition(m_renderWindow);
+                currentPos = m_renderWindow.mapPixelToCoords(mouse,m_view);
+
+                if(abs(currentPos.x - firstPos.x) >= abs(currentPos.y - firstPos.y)){
+                    if(currentPos.x - firstPos.x >=0)
+                        m_gameMap.changVal(currentPos.x,currentPos.y,1);
+                    else
+                        m_gameMap.changVal(currentPos.x,currentPos.y,3);
+                }
+
+                else{
+                    if(currentPos.y - firstPos.y >=0)
+                        m_gameMap.changVal(currentPos.x,currentPos.y,4);
+                    else
+                        m_gameMap.changVal(currentPos.x,currentPos.y,2);
+                }
+                m_mouseMove = true;
+        }
+
+        if(m_event.type == sf::Event::MouseButtonReleased && m_mouseMove){
+                sf::Vector2i mouse = sf::Mouse::getPosition(m_renderWindow);
+                secondPos = m_renderWindow.mapPixelToCoords(mouse,m_view);
+                m_leftDown = false;
+                m_mouseMove = false;
+        }
 	}
 }
 

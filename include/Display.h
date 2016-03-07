@@ -1,4 +1,6 @@
 #pragma once
+#include "GameMap.h"
+#include "MovingObject.h"
 
 #include <SFGUI/SFGUI.hpp>
 #include <SFGUI/Widgets.hpp>
@@ -17,6 +19,8 @@ public:
 	void init();
 	void run();
 
+	int getFPS(){return 60;};
+
 private:
 	//View Moving code
 	void moveView();
@@ -27,14 +31,13 @@ private:
 	void togglePlaceRoad(){m_placeRoad = !m_placeRoad;};
 	void placeRoad();
 
-    bool m_placeRoad = false;
+    bool m_placeRoad;
+    bool m_leftDown;
+    bool m_mouseMove;
 
     sf::Vector2f firstPos;
+    sf::Vector2f currentPos;
     sf::Vector2f secondPos;
-	const static int M_X = 100;
-	const static int M_Y = 200;
-
-	int m_map[M_X][M_Y];
 
 	//Setup Gui Enviroment
 	void createGui();
@@ -56,5 +59,8 @@ private:
 	//Iamge, Sprite and Texture Objects
 	sf::Sprite m_sprite;
 	sf::Texture m_texture;
+
+	//Map Class
+	GameMap m_gameMap;
 };
 
